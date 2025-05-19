@@ -1,3 +1,4 @@
+import { Home, Messages } from "@/page";
 import { Suspense } from "react";
 import { createBrowserRouter, Navigate, redirect } from "react-router-dom";
 import LoadingSpinner from "../components/ui/loading-spinner";
@@ -62,9 +63,13 @@ export const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
-				element: <h1>Test</h1>,
+				element: <Home />,
 			},
 			// Add more protected routes here
+			{
+				path: "messages",
+				element: withSuspense({ Component: Messages }),
+			},
 			{
 				path: "*",
 				element: <p>Not found</p>,
