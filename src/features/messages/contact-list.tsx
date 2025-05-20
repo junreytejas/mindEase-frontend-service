@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { FC } from "react";
+import type { FC } from "react";
 import type { Contact } from "./messages-container";
 
 export const ContactList: FC<{

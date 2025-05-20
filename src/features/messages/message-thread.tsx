@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Paperclip, Send, Smile } from "lucide-react";
-import { FC } from "react";
+import type { FC } from "react";
 import type { Contact, Message } from "./messages-container";
 
 export const MessageThread: FC<{
