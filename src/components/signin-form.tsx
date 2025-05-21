@@ -10,11 +10,31 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/store/use-auth-store";
 
 export function SigninForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const { setAuth } = useAuthStore();
+
+	const handleSignIn = (e: React.MouseEvent) => {
+		e.preventDefault();
+
+		// Mock token and user data for testing purposes
+		const mockToken =
+			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
+		const mockUser = {
+			id: "user123",
+			name: "Mrs. Jane Doe",
+			email: "counselor@gmail.com",
+			role: "counselor",
+		};
+
+		// Call setAuth with the token and user
+		setAuth(mockToken, mockUser);
+	};
+
 	return (
 		<div className={cn("flex flex-col gap-6", className)} {...props}>
 			{/* Logo and Brand Section */}
@@ -75,6 +95,7 @@ export function SigninForm({
 								<Button
 									type="submit"
 									className="w-full text-md font-semibold h-11"
+									onClick={handleSignIn}
 								>
 									Sign In
 								</Button>
