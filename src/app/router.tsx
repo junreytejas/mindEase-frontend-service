@@ -20,55 +20,60 @@ const withSuspense = ({ Component }: WithSuspenseProps) => (
 );
 
 // Router configuration
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+	[
+		{
+			path: "/auth",
+			element: <AuthRoute />,
+			children: [
+				{
+					element: withSuspense({ Component: AuthLayout }),
+					children: [
+						{
+							path: "signin",
+							element: withSuspense({ Component: SignIn }),
+						},
+						{
+							index: true,
+							element: <Navigate to="/auth/signin" replace />,
+						},
+					],
+				},
+			],
+		},
+		{
+			path: "/",
+			element: <ProtectedRoute />,
+			children: [
+				{
+					element: withSuspense({ Component: MainLayout }),
+					children: [
+						{
+							index: true,
+							element: <Home />,
+						},
+						{
+							path: "messages",
+							element: withSuspense({ Component: Messages }),
+						},
+						{
+							path: "notifications",
+							element: withSuspense({ Component: Notification }),
+						},
+						{
+							path: "profile",
+							element: withSuspense({ Component: Profile }),
+						},
+						{
+							path: "*",
+							element: <UnderConstruction />,
+						},
+					],
+				},
+			],
+		},
+	],
 	{
-		path: "/auth",
-		element: <AuthRoute />,
-		children: [
-			{
-				element: withSuspense({ Component: AuthLayout }),
-				children: [
-					{
-						path: "signin",
-						element: withSuspense({ Component: SignIn }),
-					},
-					{
-						index: true,
-						element: <Navigate to="/auth/signin" replace />,
-					},
-				],
-			},
-		],
-	},
-	{
-		path: "/",
-		element: <ProtectedRoute />,
-		children: [
-			{
-				element: withSuspense({ Component: MainLayout }),
-				children: [
-					{
-						index: true,
-						element: <Home />,
-					},
-					{
-						path: "messages",
-						element: withSuspense({ Component: Messages }),
-					},
-					{
-						path: "notifications",
-						element: withSuspense({ Component: Notification }),
-					},
-					{
-						path: "profile",
-						element: withSuspense({ Component: Profile }),
-					},
-					{
-						path: "*",
-						element: <UnderConstruction />,
-					},
-				],
-			},
-		],
-	},
-]);
+		basename: "/mindEase-frontend-service",
+	}
+);
