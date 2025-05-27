@@ -6,8 +6,7 @@ import { defineConfig } from "vite";
 // https://vite.dev/config/
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
-
-	base: "/mind-ease/",
+	base: "/mindEase-frontend-service-1/", // Change this to match your repo name
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "./src"),
