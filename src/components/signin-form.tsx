@@ -9,30 +9,86 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { firebaseAuth } from "@/lib/firebase-config";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/use-auth-store";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+// Validation schema
+const signinSchema = z.object({
+	email: z.string().min(1, "Email is required").email("Invalid email address"),
+	password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type SigninFormData = z.infer<typeof signinSchema>;
 
 export function SigninForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const [authError, setAuthError] = useState<string>("");
+
 	const { setAuth } = useAuthStore();
 
-	const handleSignIn = (e: React.MouseEvent) => {
-		e.preventDefault();
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<SigninFormData>({
+		resolver: zodResolver(signinSchema),
+		defaultValues: {
+			email: "",
+			password: "",
+		},
+	});
 
-		// Mock token and user data for testing purposes
-		const mockToken =
-			"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U";
-		const mockUser = {
-			id: "user123",
-			name: "Mrs. Jane Doe",
-			email: "counselor@gmail.com",
-			role: "counselor",
-		};
+	const onSubmit = async (data: SigninFormData) => {
+		try {
+			setAuthError("");
+			const userCredential: any = await signInWithEmailAndPassword(
+				firebaseAuth,
+				data.email,
+				data.password
+			);
+			const user = userCredential.user;
 
-		// Call setAuth with the token and user
-		setAuth(mockToken, mockUser);
+			setAuth(user.accessToken, user);
+
+			// Signed in successfully
+
+			// You can redirect or perform other actions here
+			// For example: navigate("/dashboard");
+		} catch (error: any) {
+			const errorCode = error.code;
+			const errorMessage = error.message;
+
+			// Handle specific Firebase auth errors
+			switch (errorCode) {
+				case "auth/user-not-found":
+					setAuthError("No account found with this email address.");
+					break;
+				case "auth/wrong-password":
+					setAuthError("Incorrect password. Please try again.");
+					break;
+				case "auth/invalid-email":
+					setAuthError("Invalid email address format.");
+					break;
+				case "auth/user-disabled":
+					setAuthError("This account has been disabled.");
+					break;
+				case "auth/too-many-requests":
+					setAuthError("Too many failed attempts. Please try again later.");
+					break;
+				default:
+					setAuthError("Sign in failed. Please try again.");
+			}
+
+			console.error("Sign in error:", errorCode, errorMessage);
+		}
 	};
 
 	return (
@@ -62,44 +118,55 @@ export function SigninForm({
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<form>
-						<div className="flex flex-col gap-6">
-							<div className="grid gap-3">
-								<Label htmlFor="email">Email</Label>
-								<Input
-									id="email"
-									type="email"
-									placeholder="m@example.com"
-									required
-									className="border-2"
-								/>
+					<form
+						onSubmit={handleSubmit(onSubmit)}
+						className="flex flex-col gap-6"
+					>
+						{authError && (
+							<div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+								{authError}
 							</div>
-							<div className="grid gap-3">
-								<div className="flex items-center justify-between">
-									<Label htmlFor="password">Password</Label>
-									<a
-										href="#"
-										className="text-sm text-primary hover:underline underline-offset-4"
-									>
-										Forgot password?
-									</a>
-								</div>
-								<Input
-									id="password"
-									type="password"
-									required
-									className="border-2"
-								/>
-							</div>
-							<div className="flex flex-col gap-3">
-								<Button
-									type="submit"
-									className="w-full text-md font-semibold h-11"
-									onClick={handleSignIn}
-								>
-									Sign In
-								</Button>
-							</div>
+						)}
+
+						<div className="grid gap-3">
+							<Label htmlFor="email">Email</Label>
+							<Input
+								id="email"
+								type="email"
+								placeholder="m@example.com"
+								className={cn("border-2", errors.email ? "border-red-500" : "")}
+								{...register("email")}
+							/>
+							{errors.email && (
+								<p className="text-sm text-red-600">{errors.email.message}</p>
+							)}
+						</div>
+
+						<div className="grid gap-3">
+							<Input
+								id="password"
+								type="password"
+								className={cn(
+									"border-2",
+									errors.password ? "border-red-500" : ""
+								)}
+								{...register("password")}
+							/>
+							{errors.password && (
+								<p className="text-sm text-red-600">
+									{errors.password.message}
+								</p>
+							)}
+						</div>
+
+						<div className="flex flex-col gap-3">
+							<Button
+								type="submit"
+								disabled={isSubmitting}
+								className="w-full text-md font-semibold h-11"
+							>
+								{isSubmitting ? "Signing In..." : "Sign In"}
+							</Button>
 						</div>
 					</form>
 				</CardContent>
